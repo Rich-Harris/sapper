@@ -5,6 +5,7 @@ import cookie from 'cookie';
 import devalue from 'devalue';
 import fetch from 'node-fetch';
 import URL from 'url';
+import { TLSSocket } from 'tls';
 import { IGNORE } from '../constants';
 import { Manifest, Page, Props, Req, Res } from './types';
 import { build_dir, dev, src_dir } from '@sapper/internal/manifest-server';
@@ -307,7 +308,7 @@ export function get_page_handler(
 			const nonce_attr = (res.locals && res.locals.nonce) ? ` nonce="${res.locals.nonce}"` : '';
 
 			const body = template()
-				.replace('%sapper.base%', () => `<base href="${req.baseUrl}/">`)
+				.replace('%sapper.base%', () => `<base href="${get_base_href(req)}">`)
 				.replace('%sapper.scripts%', () => `<script${nonce_attr}>${script}</script>`)
 				.replace('%sapper.html%', () => html)
 				.replace('%sapper.head%', () => `<noscript id='sapper-head-start'></noscript>${head}<noscript id='sapper-head-end'></noscript>`)
@@ -370,4 +371,21 @@ function escape_html(html: string) {
 	};
 
 	return html.replace(/["'&<>]/g, c => `&${chars[c]};`);
+}
+
+function get_base_href(req: Req) {
+	return `${get_protocol(req)}://${req.headers['host']}${req.baseUrl}`
+}
+
+function get_protocol(req: Req) {
+	const proto = (<TLSSocket>req.connection).encrypted
+		? 'https'
+		: 'http';
+
+	const header = req.headers['x-forwarded-proto'] || proto
+	const index = header.indexOf(',')
+
+	return index !== -1
+		? header.substring(0, index).trim()
+		: header.trim()
 }
