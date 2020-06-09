@@ -15,7 +15,7 @@ We can mitigate that by *prefetching* the data. Adding a `rel=prefetch` attribut
 <a rel=prefetch href='blog/what-is-sapper'>What is Sapper?</a>
 ```
 
-...will cause Sapper to run the page's `preload` function as soon as the user hovers over the link (on a desktop) or touches it (on mobile), rather than waiting for the `click` event to trigger navigation. Typically, this buys us an extra couple of hundred milliseconds, which is the difference between a user interface that feels laggy, and one that feels snappy.
+...will cause Sapper to run the page's `preload` function as soon as the user hovers over the link (on a desktop), touches (on mobile) or focuses it, rather than waiting for the `click` event to trigger navigation. Typically, this buys us an extra couple of hundred milliseconds, which is the difference between a user interface that feels laggy, and one that feels snappy.
 
 > `rel=prefetch` is a Sapper idiom, not a standard attribute for `<a>` elements
 

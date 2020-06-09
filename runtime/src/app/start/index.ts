@@ -41,6 +41,7 @@ export default function start(opts: {
 
 	// prefetch
 	addEventListener('touchstart', trigger_prefetch);
+	addEventListener('focusin', trigger_prefetch);
 	addEventListener('mousemove', handle_mousemove);
 
 	return Promise.resolve().then(() => {
@@ -66,7 +67,7 @@ function handle_mousemove(event: MouseEvent) {
 	}, 20);
 }
 
-function trigger_prefetch(event: MouseEvent | TouchEvent) {
+function trigger_prefetch(event: MouseEvent | TouchEvent | FocusEvent) {
 	const a: HTMLAnchorElement = <HTMLAnchorElement>find_anchor(<Node>event.target);
 	if (!a || a.rel !== 'prefetch') return;
 

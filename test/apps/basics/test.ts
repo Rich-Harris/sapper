@@ -125,6 +125,16 @@ describe('basics', function() {
 		assert.equal(requests[1], `${r.base}/b.json`);
 	});
 
+	it('prefetches on focus', async () => {
+		await r.load(`/prefetch`);
+		await r.sapper.start();
+
+		const requests = await r.capture_requests(() => r.page.focus('a'));
+
+		assert.equal(requests.length, 2);
+		assert.equal(requests[1], `${r.base}/b.json`);
+	});
+
 	// TODO equivalent test for a webpack app
 	it('sets Content-Type, Link...modulepreload, and Cache-Control headers', async () => {
 		const { headers } = await get(r.base);
