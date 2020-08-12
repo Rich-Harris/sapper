@@ -8,7 +8,7 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 		// 'delete' cannot be exported from a module because it is a keyword,
 		// so check for 'del' instead
 		const method_export = method === 'delete' ? 'del' : method;
-		const handle_method = route.handlers[method_export];
+		const handle_method = route.handlers[method_export] || route.handlers.any;
 		if (handle_method) {
 			if (process.env.SAPPER_EXPORT) {
 				const { write, end, setHeader } = res;
@@ -18,7 +18,7 @@ export function get_server_route_handler(routes: ServerRoute[]) {
 				// intercept data so that it can be exported
 				res.write = function(chunk: any) {
 					chunks.push(Buffer.from(chunk));
-					write.apply(res, arguments);
+					return write.apply(res, arguments);
 				};
 
 				res.setHeader = function(name: string, value: string) {
