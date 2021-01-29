@@ -127,7 +127,7 @@ export function get_page_handler(
 			error: (statusCode: number, message: Error | string) => {
 				preload_error = { statusCode, message };
 			},
-			fetch: (url: string, opts?: any) => {
+			fetch: async (url: string, opts?: any) => {
 				const protocol = req.socket.encrypted ? 'https' : 'http';
 				const parsed = new URL.URL(url, `${protocol}://127.0.0.1:${process.env.PORT}${req.baseUrl ? req.baseUrl + '/' :''}`);
 
@@ -164,7 +164,15 @@ export function get_page_handler(
 					}
 				}
 
-				return fetch(parsed.href, opts);
+				const response = await fetch(parsed.href, opts);
+
+				const header = response.headers.get('Set-Cookie');
+
+				if (header !== null) {
+					res.setHeader('Set-Cookie', header);
+				}
+
+				return response;
 			}
 		};
 
