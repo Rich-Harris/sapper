@@ -1,3 +1,4 @@
+import { createHash, Hash } from 'crypto';
 import * as path from 'path';
 import color from 'kleur';
 import relative from 'require-relative';
@@ -9,6 +10,7 @@ import {
 	OutputChunk,
 	Plugin,
 	PluginContext,
+	PreRenderedChunk,
 	RenderedChunk,
 	RollupError
 } from 'rollup';
@@ -160,13 +162,44 @@ export default class RollupCompiler {
 
 		const that = this;
 
-		// TODO this is hacky. refactor out into an external rollup plugin
-		(mod.plugins || (mod.plugins = [])).push(css_chunks({
-			entryFileNames: '[name]-[hash].css'
-		}));
-		if (!/[\\/]client\./.test(entry_point)) {
-			return mod;
-		}
+		/**
+		 * Track css code hashes for proper chunk hashing
+		 */
+		const css_hashing = () => {
+			const css_hashes: Record<string, string> = {};
+			return <Plugin>{
+				name: 'sapper-css-hashing',
+				augmentChunkHash(this: PluginContext, chunk: PreRenderedChunk) {
+					// Augment chunk hash based on saved css hashes  
+					let hash: Hash;
+					for (const moduleId in chunk.modules) {
+						const css_hash = css_hashes[moduleId];
+						if (css_hash) {
+							if (!hash) {
+								hash = createHash('sha256');
+							}
+							hash.update(css_hash);
+						}
+					}
+					if (hash) {
+						return hash.digest('hex');
+					}
+				},
+				transform(this: PluginContext, code: string, id: string) {
+					const module_path = path.parse(id);
+					if (module_path.ext === '.css') {
+						// Ignore svelte css files created with `emitCss` enabled. These css files are generated out
+						// of svelte's `<style>` and already part of the code that was used to generate the chunk hash
+						const is_svelte_css = !!this.getModuleInfo(`${module_path.dir}/${module_path.name}.svelte`);
+						if (!is_svelte_css) {
+							// save css code based hashes
+							css_hashes[id] = createHash('sha256').update(code).digest('hex');
+							return { code, map: null, moduleSideEffects: 'no-treeshake' };
+						}
+					}
+				}
+			};
+		};
 
 		/**
 		 * Finds dynamic imports and rewrites them to import the component and its CSS in parallel
@@ -308,6 +341,14 @@ export default class RollupCompiler {
 			}
 		};
 
+		// TODO this is hacky. refactor out into an external rollup plugin
+		(mod.plugins || (mod.plugins = [])).push(css_hashing());
+		mod.plugins.push(css_chunks({
+			entryFileNames: '[name]-[hash].css'
+		}));
+		if (!/[\\/]client\./.test(entry_point)) {
+			return mod;
+		}
 		mod.plugins.push(css_injection);
 		mod.plugins.push(sapper_internal);
 
