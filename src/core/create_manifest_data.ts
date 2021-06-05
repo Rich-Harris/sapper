@@ -167,7 +167,7 @@ export default function create_manifest_data(cwd: string, extensions = '.svelte 
 		});
 	}
 
-	const root = find_layout('_layout', 'main') || default_layout;
+	const root = find_layout('_layout', 'main') || find_layout('index', 'main', '_layout') || default_layout;
 	const error = find_layout('_error', 'error') || default_error;
 
 	walk(cwd, [], [], []);
