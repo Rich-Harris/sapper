@@ -1,16 +1,17 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
-export default function validate_bundler(bundler?: 'rollup' | 'webpack') {
+export default function validate_bundler(cwd: string, bundler?: 'rollup' | 'webpack') {
 	if (!bundler) {
 		bundler = (
-			fs.existsSync('rollup.config.js') || fs.existsSync('rollup.config.ts') ? 'rollup' :
-				fs.existsSync('webpack.config.js') || fs.existsSync('webpack.config.ts') ? 'webpack' : null
+			fs.existsSync(path.resolve(cwd, 'rollup.config.js')) || fs.existsSync(path.resolve(cwd, 'rollup.config.ts')) ? 'rollup' :
+				fs.existsSync(path.resolve(cwd, 'webpack.config.js')) || fs.existsSync(path.resolve(cwd, 'webpack.config.ts')) ? 'webpack' : null
 		);
 
 		if (!bundler) {
 			// TODO remove in a future version
-			deprecate_dir('rollup');
-			deprecate_dir('webpack');
+			deprecate_dir(cwd, 'rollup');
+			deprecate_dir(cwd, 'webpack');
 
 			throw new Error('Could not find a configuration file for rollup or webpack');
 		}
@@ -23,9 +24,9 @@ export default function validate_bundler(bundler?: 'rollup' | 'webpack') {
 	return bundler;
 }
 
-function deprecate_dir(bundler: 'rollup' | 'webpack') {
+function deprecate_dir(cwd: string, bundler: 'rollup' | 'webpack') {
 	try {
-		const stats = fs.statSync(bundler);
+		const stats = fs.statSync(path.resolve(cwd, bundler));
 		if (!stats.isDirectory()) return;
 	} catch (err) {
 		// do nothing

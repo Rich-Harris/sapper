@@ -39,6 +39,7 @@ class Watcher extends EventEmitter {
 	bundler: 'rollup' | 'webpack';
 	dirs: {
 		cwd: string;
+		root: string;
 		src: string;
 		dest: string;
 		routes: string;
@@ -88,9 +89,10 @@ class Watcher extends EventEmitter {
 
 		cwd = path.resolve(cwd);
 
-		this.bundler = validate_bundler(bundler);
+		this.bundler = validate_bundler(cwd, bundler);
 		this.dirs = {
 			cwd,
+			root: process.cwd(),
 			src: path.resolve(cwd, src),
 			dest: path.resolve(cwd, dest),
 			routes: path.resolve(cwd, routes),
@@ -137,7 +139,7 @@ class Watcher extends EventEmitter {
 			this.port = await ports.find(3000);
 		}
 
-		const { cwd, src, dest, routes, output, static: static_files } = this.dirs;
+		const { cwd, root, src, dest, routes, output, static: static_files } = this.dirs;
 
 		rimraf(output);
 		mkdirp(output);
@@ -161,7 +163,7 @@ class Watcher extends EventEmitter {
 				manifest_data,
 				dev: true,
 				dev_port: this.dev_port,
-				cwd, src, dest, routes, output
+				root, src, dest, routes, output
 			});
 		} catch (err) {
 			this.emit('fatal', {
@@ -189,7 +191,7 @@ class Watcher extends EventEmitter {
 							manifest_data,
 							dev: true,
 							dev_port: this.dev_port,
-							cwd, src, dest, routes, output
+							root, src, dest, routes, output
 						});
 					} catch (error) {
 						this.emit('error', {

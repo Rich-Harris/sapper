@@ -12,6 +12,7 @@ import { rimraf, mkdirp } from './utils/fs_utils';
 
 type Opts = {
 	cwd?: string;
+	root?: string;
 	src?: string;
 	routes?: string;
 	dest?: string;
@@ -25,6 +26,7 @@ type Opts = {
 
 export async function build({
 	cwd,
+	root = undefined,
 	src = 'src',
 	routes = 'src/routes',
 	output = 'src/node_modules/@sapper',
@@ -36,14 +38,16 @@ export async function build({
 	ext = undefined,
 	oncompile = noop
 }: Opts = {}) {
-	bundler = validate_bundler(bundler);
 
 	cwd = path.resolve(cwd);
+	root = root ? path.resolve(root) : cwd;
 	src = path.resolve(cwd, src);
 	dest = path.resolve(cwd, dest);
 	routes = path.resolve(cwd, routes);
 	output = path.resolve(cwd, output);
 	static_files = path.resolve(cwd, static_files);
+
+	bundler = validate_bundler(cwd, bundler);
 
 	if (legacy && bundler === 'webpack') {
 		throw new Error('Legacy builds are not supported for projects using webpack');
@@ -69,7 +73,7 @@ export async function build({
 	create_app({
 		bundler,
 		manifest_data,
-		cwd,
+		root,
 		src,
 		dest,
 		routes,
