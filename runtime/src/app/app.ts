@@ -179,7 +179,7 @@ function part_changed(i, segment, match, stringified_query) {
 	if (!previous) return false;
 	if (segment !== previous.segment) return true;
 	if (previous.match) {
-		if (JSON.stringify(previous.match.slice(1, i + 2)) !== JSON.stringify(match.slice(1, i + 2))) {
+		if (previous.match[0].split('/').slice(i+1, i+2)[0] !== match[0].split('/').slice(i+1, i+2)[0]) {
 			return true;
 		}
 	}
