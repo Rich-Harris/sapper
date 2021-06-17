@@ -24,7 +24,7 @@ export default function middleware(opts: {
 				}
 
 				req.baseUrl = originalUrl
-					? originalUrl.slice(0, -req.url.length)
+					? decodeURI(originalUrl).slice(0, -req.url.length)
 					: '';
 			}
 
