@@ -45,13 +45,10 @@ export default function(files) {
 			link = document.createElement('link');
 			link.rel = 'stylesheet';
 			link.href = href;
+			link.onload = link.onerror = fulfil;
 			document.head.appendChild(link);
-		}
-		if (link.sheet) {
-			fulfil();
 		} else {
-			link.onload = function() { return fulfil() };
-			link.onerror = reject;
+			fulfil();
 		}
 	})}));
 };`.trim();
