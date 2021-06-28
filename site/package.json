@@ -15,7 +15,7 @@
     "highlight.js": "^10.4.1",
     "marked": "^0.7.0",
     "polka": "^0.5.2",
-    "prismjs": "^1.23.0",
+    "prismjs": "^1.24.0",
     "sirv": "^1.0.0"
   },
   "devDependencies": {
