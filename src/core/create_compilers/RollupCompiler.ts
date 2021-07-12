@@ -50,8 +50,8 @@ export default function(files) {
 		if (link.sheet) {
 			fulfil();
 		} else {
-			link.onload = function() { return fulfil() };
-			link.onerror = reject;
+			link.addEventListener('load', function() { return fulfil() });
+			link.addEventListener('error', reject);
 		}
 	})}));
 };`.trim();
